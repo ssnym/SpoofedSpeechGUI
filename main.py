@@ -6,6 +6,7 @@ import librosa.display
 import numpy as np
 import os, glob
 import warnings
+from datetime import datetime # Import the datetime module
 
 from main_aasist import aasist_model
 from main_rawnet import rawnet_model
@@ -54,7 +55,7 @@ class ResultsDialog(QDialog):
         if not self.results_data:
             return
 
-        headers = ["Filename", "prob of spoof (AASIST) (%)", "prob of spoof (RawNet) (%)", "prob of spoof (One-Class) (%)", "Final (%)"]
+        headers = ["Filename", "prob of spoof (AASIST) (%)", "prob of spoof (RawNet) (%)", "prob of spoof (One-Class) (%)", "Final prob of spoof (%)"]
         self.table.setRowCount(len(self.results_data))
         self.table.setColumnCount(len(headers))
         self.table.setHorizontalHeaderLabels(headers)
@@ -64,13 +65,14 @@ class ResultsDialog(QDialog):
             filename = QTableWidgetItem(item_data['filename'])
             a_spoof_confidence = QTableWidgetItem(f"{item_data['a_spoof_confidence']*100:.2f}")
             r_spoof_confidence = QTableWidgetItem(f"{item_data['r_spoof_confidence']*100:.2f}")
-            # oc_spoof_confidence = QTableWidgetItem(f"{item_data['oc_spoof_confidence']*100:.2f}")
-            oc_spoof_confidence = QTableWidgetItem('N/A')
+            # oc_spoof_confidence and oc_result are placeholders as in the original code
+            oc_spoof_confidence = QTableWidgetItem('N/A') # Set to N/A as per original code for display
             final_score = QTableWidgetItem(f"{item_data['final_score']*100:.2f}")
-            final_result = QTableWidgetItem(item_data['final_result'])
 
             # Center-align the scores and results for better readability
-            for cell in [a_spoof_confidence, r_spoof_confidence, oc_spoof_confidence, final_score, final_result]:
+            # Note: oc_spoof_confidence and final_result are also included for alignment,
+            #       even though oc_spoof_confidence might be 'N/A'.
+            for cell in [filename, a_spoof_confidence, r_spoof_confidence, oc_spoof_confidence, final_score]:
                 cell.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
             # Place items into the table
@@ -79,7 +81,6 @@ class ResultsDialog(QDialog):
             self.table.setItem(row_idx, 2, r_spoof_confidence)
             self.table.setItem(row_idx, 3, oc_spoof_confidence)
             self.table.setItem(row_idx, 4, final_score)
-            self.table.setItem(row_idx, 5, final_result)
 
         # Automatically resize columns to fit the content
         self.table.resizeColumnsToContents()
@@ -91,13 +92,23 @@ class ResultsDialog(QDialog):
         )
         if file_path:
             try:
-                with open(file_path, 'w') as f:
+                with open(file_path, 'w', newline='') as f: # Added newline='' for proper CSV writing
+                    # Get current date and time
+                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    f.write(f"Results generated on: {current_time}\n\n") # Write date and time, followed by an extra newline for spacing
+
                     # Write header
                     headers = [self.table.horizontalHeaderItem(i).text() for i in range(self.table.columnCount())]
                     f.write(",".join(headers) + "\n")
                     # Write data rows
                     for row in range(self.table.rowCount()):
-                        row_data = [self.table.item(row, col).text() for col in range(self.table.columnCount())]
+                        row_data = []
+                        for col in range(self.table.columnCount()):
+                            item = self.table.item(row, col)
+                            if item is not None:
+                                row_data.append(item.text())
+                            else:
+                                row_data.append('') # Handle empty cells
                         f.write(",".join(row_data) + "\n")
             except Exception as e:
                 print(f"Error saving file: {e}")
@@ -183,7 +194,7 @@ class Window(QMainWindow):
         result_layout.addWidget(self.one_class_label)
         
         # Last Bar
-        self.final_result_label=QLabel('Final Result : None')
+        self.final_result_label=QLabel('Final prob of spoof : None')
         self.final_result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         
@@ -266,84 +277,96 @@ class Window(QMainWindow):
 
         files_to_process = []
         if self.audio_path:
-            # files_to_process.append(self.audio_path)
+            # files_to_process.append(self.audio_path) # No need to append to this list if processing single file immediately
             a_spoof_confidence, a_result = aasist_model(self.audio_path)
             r_spoof_confidence, r_result = rawnet_model(self.audio_path)
             # oc_spoof_confidence and oc_result are placeholders as in the original code
-            oc_spoof_confidence, oc_result = 0, 0
+            oc_spoof_confidence, oc_result = 0, 0 # Keep as 0, 0 for now as per current logic
             
-            final_result = 1 if (a_result + r_result + oc_result) >= 2 else 0
+            # Determine final result by majority vote (from the 3 models - assuming oc_result is 0)
+            final_result_bool = (a_result + r_result + oc_result) >= 2
+            # Average score of the two active models
             final_spoof_confidence = (a_spoof_confidence + r_spoof_confidence) / 2
             
             self.aasist_label.setText(f'prob of spoof (AASIST): {a_spoof_confidence*100:.2f} ')
             self.rawnet_label.setText(f'prob of spoof (RawNet): {r_spoof_confidence*100:.2f} ')
             self.one_class_label.setText(f'prob of spoof (One-Class): N/A')
-            self.final_result_label.setText(f'Final prob of spoof : {final_spoof_confidence*100:.2f} ')
-
+            self.final_result_label.setText(f'Final prob of spoof : {final_spoof_confidence*100:.2f} % ') # Corrected display
+            
+            # For single file, still show in dialog for consistency if desired, otherwise remove.
+            # Currently, single file results are displayed in labels, not the dialog.
             return
             
         elif self.audio_folder_files:
             files_to_process.extend(self.audio_folder_files)
-            self.aasist_label.setText(f'prob of spoof (AASIST): N/A')
-            self.rawnet_label.setText(f'prob of spoof (RawNet): N/A')
-            self.one_class_label.setText(f'prob of spoof (One-Class): N/A')
-            self.final_result_label.setText(f'Final prob of spoof : N/A')
+            # Reset labels when processing a folder
+            self.aasist_label.setText(f'prob of spoof (AASIST): Processing...')
+            self.rawnet_label.setText(f'prob of spoof (RawNet): Processing...')
+            self.one_class_label.setText(f'prob of spoof (One-Class): Processing...')
+            self.final_result_label.setText(f'Final prob of spoof : Processing folder...')
         else:
             self.final_result_label.setText("Please select a file or folder first.")
             return
 
         all_results_data = []
         for file_path in files_to_process:
-            a_spoof_confidence, a_result = aasist_model(file_path)
-            r_spoof_confidence, r_result = rawnet_model(file_path)
-            # oc_spoof_confidence and oc_result are placeholders as in the original code
-            oc_spoof_confidence, oc_result = 0, 0
+            a_spoof_confidence, a_result_raw = aasist_model(file_path)
+            r_spoof_confidence, r_result_raw = rawnet_model(file_path)
+            
+            # Assume a_result_raw and r_result_raw are 0 for bonafide, 1 for spoofed (or vice versa, check your model's output)
+            # For a_result and r_result in the table, we want "Bonafide" or "Spoofed" string.
+            # Let's assume 0 means bonafide and 1 means spoofed from your model's a_result and r_result.
+            # If your model outputs 0 for spoofed and 1 for bonafide, you'd reverse these.
+            
+            # oc_spoof_confidence and oc_result are placeholders
+            oc_spoof_confidence, oc_result_raw = 0, 0 
 
             # Determine final result by majority vote (from the 3 models)
-            final_result = 1 if (a_result + r_result + oc_result) >= 2 else 0
+            # Ensure consistency: if 0 is Bonafide and 1 is Spoofed:
+            # We want to count how many models say "spoofed"
+            # spoofed_count = 0
+            # if a_result_raw == 1: # Assuming 1 means spoofed
+            #     spoofed_count += 1
+            # if r_result_raw == 1:
+            #     spoofed_count += 1
+            # if oc_result_raw == 1:
+            #     spoofed_count += 1
+
+            # final_result_bool = (spoofed_count >= 2) # True if 2 or more models say spoofed
+
             # Average score of the two active models
             final_score = (a_spoof_confidence + r_spoof_confidence) / 2
+            # final_result_str = "Spoofed" if final_result_bool else "Bonafide"
 
             # Store data for the results dialog
             all_results_data.append({
                 "filename": os.path.basename(file_path),
-                "a_spoof_confidence": a_spoof_confidence, "a_result": "Bonafide" if a_result else "Spoofed",
-                "r_spoof_confidence": r_spoof_confidence, "r_result": "Bonafide" if r_result else "Spoofed",
-                "final_score": final_score, "final_result": "Bonafide" if final_result else "Spoofed"
+                "a_spoof_confidence": a_spoof_confidence, 
+                "r_spoof_confidence": r_spoof_confidence, 
+                "oc_spoof_confidence": oc_spoof_confidence, # Keep this even if N/A for consistency
+                "final_score": final_score, 
             })
             
-            # Update main window labels if it's a single file test
-            if len(files_to_process) == 1:
-                self.aasist_label.setText(f'AST: {a_spoof_confidence*100:.2f} ')
-                self.rawnet_label.setText(f'RNT: {r_spoof_confidence*100:.2f} ')
-                self.one_class_label.setText(f'OCC: N/A')
-                self.final_result_label.setText(f'Final Result: {final_score*100:.2f} : {"Bonafide" if final_result else "Spoofed"}')
-
         if all_results_data: # Check if there is data to display
-            dialog = ResultsDialog(all_results_data, self) # Pass the correct variable
+            dialog = ResultsDialog(all_results_data, self) 
             dialog.exec()
   
-    
+    # This method is no longer used since ResultsDialog now handles table display directly.
+    # It can be removed or kept for reference if text display logic is needed elsewhere.
     def _format_results_for_display(self, results_data):
         """
         Creates a neatly formatted, aligned string from the results data for display.
         The column width for the filename is calculated dynamically.
         """
-        # If there's nothing to show, return an empty message.
         if not results_data:
             return "No audio files were processed."
 
-        # 1. Calculate the maximum filename length from the results.
-        #    We add 3 for padding so the longest name isn't crammed against the '|'.
-        #    We also compare it to the length of the header "Filename" to ensure the column is wide enough for the header.
         filename_col_width = max(len(item['filename']) for item in results_data) + 3
         filename_col_width = max(filename_col_width, len('Filename') + 3)
 
-        # 2. Define the other column widths (these are fixed)
         score_col_width = 12
         res_col_width = 12
 
-        # 3. Create the header string using the dynamic filename width
         header = (
             f"{'Filename':<{filename_col_width}} | "
             f"{'AASIST (%)':<{score_col_width}} | {'AASIST Res':<{res_col_width}} | "
@@ -351,11 +374,9 @@ class Window(QMainWindow):
             f"{'Final (%)':<{score_col_width}} | {'Final Res'}\n"
         )
 
-        # 4. Create the separator line, also using the dynamic width, so it matches the table.
-        total_width = (filename_col_width + (score_col_width * 3) + (res_col_width * 2) + (3 * 5)) # Sum of columns + separators
+        total_width = (filename_col_width + (score_col_width * 3) + (res_col_width * 2) + (3 * 5))
         separator = "-" * total_width + "\n"
 
-        # 5. Build the body, row by row, using the same dynamic width for alignment
         body = ""
         for item in results_data:
             body += (
@@ -409,4 +430,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-
