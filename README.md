@@ -21,9 +21,9 @@ The pretrained models are provided by **[Shilpa](https://github.com/shilpac131)*
 
 1. First, clone the repository locally
 ```bash
-git clone https://github.com/ssnym/SpoofSpeechGUI
+git clone https://github.com/ssnym/SpoofedSpeechGUI
 
-cd SpoofSpeechGUI
+cd SpoofedSpeechGUI
 ```
 
 2. Create and activate the conda environment
@@ -44,7 +44,7 @@ python main.py
 ```
 ---
 
-## Method 2 (Using Docker)
+## Method 2 : Using Docker
 
 ### <b> Pre-requisites </b>
 
@@ -54,9 +54,9 @@ Docker need to installed on your system . Please follow the guide to install con
 
 1. First, clone the repository locally
 ```bash
-git clone https://github.com/ssnym/SpoofSpeechGUI
+git clone https://github.com/ssnym/SpoofedSpeechGUI
 
-cd SpoofSpeechGUI
+cd SpoofedSpeechGUI
 ```
 
 2. Start the docker using command
