@@ -46,7 +46,7 @@ python main.py
 ```
 ---
 
-## Method 2 : Using Docker
+## Method 2 : Using Docker (Linux Systems)
 
 ### <b> Pre-requisites </b>
 
