@@ -77,6 +77,8 @@ docker build -t <image_name> .
 Run the following command to run the docker image. Make sure to replace `<image_name>` with the name you chose in the previous step.
 
 ```bash
+# For Linux 
+
 xhost +local:docker && docker run -it --rm \
 --env="DISPLAY" \
 --env="QT_X11_NO_MITSHM=1" \
