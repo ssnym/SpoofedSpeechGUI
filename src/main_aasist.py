@@ -30,7 +30,9 @@ from torch.utils.data import DataLoader
 from torchcontrib.optim import SWA
 import numpy as np
 
-from aasist_utils import set_seed
+from src.utils import resource_path
+
+from src.aasist_utils import set_seed
 import soundfile as sf
 import librosa
 
@@ -49,7 +51,10 @@ def aasist_model(audio_path):
     
     # load experiment configurations
     
-    config_file = 'config/AASIST.conf'
+    config_file = resource_path("config/AASIST.conf")
+
+    with open(config_file, "r") as f:
+        config = json.load(f)
     
     with open(config_file, "r") as f_json:
         config = json.loads(f_json.read())
@@ -75,8 +80,11 @@ def aasist_model(audio_path):
 
 
     # evaluates pretrained model and exit script
-    model.load_state_dict(
-        torch.load(config["model_path"], map_location=device))
+    # model.load_state_dict(
+    #     torch.load(config["model_path"], map_location=device))
+    model_path = resource_path(config["model_path"])
+    model.load_state_dict(torch.load(model_path, map_location=device))
+
     # print("Model loaded : {}".format(config["model_path"]))
 
     # eval according to the choices by the user
@@ -103,7 +111,10 @@ def aasist_model(audio_path):
 
 def get_model(model_config: Dict, device: torch.device):
     """Define DNN model architecture"""
-    module = import_module("models.{}".format(model_config["architecture"]))
+    # module = import_module("models.{}".format(model_config["architecture"]))
+    module_name = f"models.{model_config['architecture']}"
+    module = import_module(module_name)
+
     _model = getattr(module, "Model")
     model = _model(model_config).to(device)
     nb_params = sum([param.view(-1).size()[0] for param in model.parameters()])

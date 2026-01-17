@@ -8,8 +8,8 @@ import os, glob
 import warnings
 from datetime import datetime # Import the datetime module
 
-from main_aasist import aasist_model
-from main_rawnet import rawnet_model
+from src.main_aasist import aasist_model
+from src.main_rawnet import rawnet_model
 
 import matplotlib.pyplot as plt
 

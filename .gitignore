@@ -1,5 +1,14 @@
 __pycache__/
-audio_1.0_env/
+audio_1.0_env
+*.pyc
 
-old_readme.md
-results
+
+build/
+dist/
+*.spec
+
+
+*.AppImage
+
+
+results/

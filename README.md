@@ -42,7 +42,7 @@ conda activate <env_name>
 3. Run the main script to launch the GUI
 
 ```bash
-python main.py
+python -m src.main
 ```
 ---
 

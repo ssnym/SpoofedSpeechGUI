@@ -8,7 +8,9 @@ from torch import Tensor
 import librosa
 from importlib import import_module
 from typing import Dict, List, Union
-from aasist_utils import set_seed
+from src.aasist_utils import set_seed
+
+from src.utils import resource_path
 
 
 def pad(x, max_len=64600):
@@ -24,7 +26,8 @@ def pad(x, max_len=64600):
     
 def rawnet_model(audio_path):
     
-    config_file = 'config/RawNet.conf'
+    # config_file = 'config/RawNet.conf'
+    config_file = resource_path("config/RawNet.conf")
 
     with open(config_file, "r") as f_json:
         config = json.loads(f_json.read())
@@ -42,7 +45,9 @@ def rawnet_model(audio_path):
     model =(model).to(device)
     
     
-    model_path = 'models/weights/pre_trained_DF_RawNet2.pth'
+    # model_path = 'models/weights/pre_trained_DF_RawNet2.pth'
+    model_path = resource_path("models/weights/pre_trained_DF_RawNet2.pth")
+
     
     if model_path:
         model.load_state_dict(torch.load(model_path,map_location=device))
