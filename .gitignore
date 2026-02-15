@@ -1,6 +1,6 @@
 __pycache__/
-audio_1.0_env
 *.pyc
+audio_1.0_env
 
 
 build/
@@ -11,4 +11,6 @@ dist/
 *.AppImage
 
 
-results/
+results
+
+.env
