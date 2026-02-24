@@ -6,7 +6,7 @@ This applications uses two spoofed speech detection models :  **[AASIST](https:/
 
 The third model One Class Classifier is being trained so in GUI application the value for One-Class will be **N/A** for now
 
-The pretrained models are provided by **[Shilpa](https://github.com/shilpac131)**
+The pretrained models are provided by **[Shilpa](https://github.com/shilpac131/AnalysisOfSpeechDeepfakes)**
 
 ---
 
