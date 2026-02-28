@@ -23,7 +23,7 @@ The pretrained models are provided by **[Shilpa](https://github.com/shilpac131/A
 
 1. First, clone the repository locally
 ```bash
-git clone https://github.com/ssnym/SpoofedSpeechGUI
+git clone https://github.com/ssnym/SpoofedSpeechGUI.git
 
 cd SpoofedSpeechGUI
 ```
