@@ -2,11 +2,18 @@
 
 This repository provides GUI-based desktop application built using **PyQt6** to demonstrate spoofed speech detection. 
 
-This applications uses two spoofed speech detection models :  **[AASIST](https://arxiv.org/abs/2110.01200)**  and **[RawNet](https://arxiv.org/abs/2011.01108)**
+This applications uses two spoofed speech detection models :    
+- **[AASIST](https://arxiv.org/abs/2110.01200)**  
+- **[RawNet](https://arxiv.org/abs/2011.01108)**
 
-The third model One Class Classifier is being trained so in GUI application the value for One-Class will be **N/A** for now
+The third model One Class Classifier is being trained so in GUI application the value for One-Class will be **N/A** in the GUI
 
 The pretrained models are provided by **[Shilpa](https://github.com/shilpac131/AnalysisOfSpeechDeepfakes)**
+
+
+<p align="center">
+  <img src="assets/application.png" width="95%" alt="Spoofed Speech Detection GUI">
+</p>
 
 ---
 
