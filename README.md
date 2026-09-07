@@ -103,6 +103,6 @@ xhost +local:docker && docker run -it --rm \
 
 ## Acknowledgements
 
-Developed during a summer internship at IIT Mandi (Jun–Jul 2025), 
+Developed during a summer internship at IIT Mandi (Jun–Jul 2025),    
 under the supervision of Prof. Padmanabhan Rajan.
 
